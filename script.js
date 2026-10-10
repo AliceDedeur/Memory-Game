@@ -1,20 +1,19 @@
-// Sélectionner les éléments html et le stokage des fruits
+// Sélectionner les éléments html et le stockage des fruits
 const symbols = ["🍎", "🍎", "🍌", "🍌", "🍇", "🍇", "🍓", "🍓", "🍉", "🍉", "🍒", "🍒", "🥝", "🥝", "🍍", "🍍"];
 const userGame = document.getElementById('game');
-const UserMessage = document.getElementById('message');
+const userMessage = document.getElementById('message');
 
 // Méthode pour mélanger de manière aléatoire les fruits
 // Math.random génère un nbre décimal entre 0 et 1 (exclu)/ -0.5 pour obtenir 1x sur 2 + ou -
 const symbolsMelange = symbols.sort(() => Math.random() - 0.5);
 
-//  Variables pour la mémoire
-let deuxCartes = []; 
-let pairsRatees = false;  
-let pairesTrouvees = 0;    
+// Variables pour la mémoire
+let deuxCartes = [];
+let pairesTrouvees = 0;
 
-//  Boucle pour afficher chaque carte
+// Boucle pour afficher chaque carte
 symbolsMelange.forEach((symbole) => {
-    // on crée une div qui la contient 
+    // on crée une div qui la contient
     let box = document.createElement('div');
     // on lui ajoute la classe correspondante
     box.classList.add('carte');
@@ -24,31 +23,21 @@ symbolsMelange.forEach((symbole) => {
     box.textContent = symbole;
 
     // On crée un écouteur pour chaque clique sur une carte
-    box.addEventListener('click', function() {
-        //  Si la carte a déjà la class trouvee on arrête
-         if (box.className.includes('trouvee')) {
+    box.addEventListener('click', function () {
+        // On ignore le clic si la carte est déjà trouvée ou déjà retournée
+        if (box.classList.contains('trouvee') || box.classList.contains('retournee')) {
             return;
         }
-        // si la carte est visible on permet au clic de la retourner dans l'autre sens
-         if (box.className.includes('retournee')) {
-            box.classList.remove('retournee');
-            
-            // On la retire du tableau deuxCartes pour libérer de la place (on écrase le contenu de la const deuxCartes)
-            // avec la fonction filter, on analyse en boucle le contenu
-            // et pour chaque carte examinée elle vérifie qu'elle est différente de celle que le joueur à cliqué
-            deuxCartes = deuxCartes.filter(carte => carte !== box);
-            return; 
-        }
-        // Quand deuxCartes contient deux cartes on arrête
+        // On ignore le clic si deux cartes sont déjà en cours de vérification
         if (deuxCartes.length === 2) {
-            return; 
+            return;
         }
 
-        // Quand on clique sur une carte "elle se retourne" grâce à l'affectation de la class retournee
-        box.classList.add('retournee'); 
-        //  et on ajoute la carte dans le tableau des cartes cliquées
+        // On retourne la carte et on l'ajoute au tableau
+        box.classList.add('retournee');
         deuxCartes.push(box);
-        // si les cartes retournées sont 2, on les vérifie avec une nvlle fonction
+
+        // Si deux cartes sont retournées, on vérifie
         if (deuxCartes.length === 2) {
             verification();
         }
@@ -57,26 +46,32 @@ symbolsMelange.forEach((symbole) => {
     userGame.appendChild(box);
 });
 
-//  Vérification des deux cartes
-function verification(){
+// Vérification des deux cartes
+function verification() {
     // Créer deux variables pour chacune des cartes dans liste deuxCartes avec leur index
     const carte1 = deuxCartes[0];
     const carte2 = deuxCartes[1];
+
     // Si les symboles de carte1 et carte2 sont identiques alors ...
-    if(carte1.dataset.symbole === carte2.dataset.symbole){
+    if (carte1.dataset.symbole === carte2.dataset.symbole) {
         // appliquer la class retournee
-        carte1.classList.add('retournee');
-        carte2.classList.add('retournee');
+        carte1.classList.add('trouvee');
+        carte2.classList.add('trouvee');
         // vider la liste deuxCartes
         deuxCartes = [];
-        // Additionner ces cartes dans la variable pairsTrouvees
-        pairesTrouvees++
-    }
-    // Si les pairsTouvees sont = à 8 alors...
-    if(pairesTrouvees === 8){
-        // Afficher message dans la div message
-        UserMessage.textContent = "Bravo, vous avez réussi"
+        pairesTrouvees++;
+
+        // Si les pairsTouvees sont = à 8 alors...
+        if (pairesTrouvees === 8) {
+            // Afficher message dans la div message
+            userMessage.textContent = "Bravo, vous avez réussi !";
+        }
+    } else {
+        // Paire ratée : on laisse 1 seconde pour mémoriser, puis on cache
+        setTimeout(() => {
+            carte1.classList.remove('retournee');
+            carte2.classList.remove('retournee');
+            deuxCartes = [];
+        }, 1000);
     }
 }
-
-
